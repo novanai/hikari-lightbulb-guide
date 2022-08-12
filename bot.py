@@ -15,6 +15,8 @@ bot = lightbulb.BotApp(
     banner=None,
 )
 
+bot.load_extensions_from("./extensions/")
+
 
 @bot.command
 @lightbulb.command("ping", description="The bot's ping")
