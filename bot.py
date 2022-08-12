@@ -5,6 +5,7 @@ import aiohttp
 import dotenv
 import hikari
 import lightbulb
+import miru
 
 dotenv.load_dotenv()
 
@@ -16,6 +17,7 @@ bot = lightbulb.BotApp(
     banner=None,
 )
 
+miru.load(bot)
 bot.load_extensions_from("./extensions/")
 
 

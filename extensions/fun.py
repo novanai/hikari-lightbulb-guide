@@ -1,6 +1,8 @@
+import asyncio
+
 import hikari
 import lightbulb
-import asyncio
+import miru
 
 fun_plugin = lightbulb.Plugin("Fun")
 
@@ -100,6 +102,67 @@ async def animal_subcommand(ctx: lightbulb.Context) -> None:
                 )
             else:
                 await msg.edit(f"API returned a {res.status} status :c", components=[])
+
+
+class AnimalView(miru.View):
+    def __init__(self, author: hikari.User) -> None:
+        self.author = author
+        super().__init__(timeout=60)
+
+    @miru.select(
+        custom_id="animal_select",
+        placeholder="Pick an animal",
+        options=[
+            miru.SelectOption("Dog", "dog", emoji="🐶"),
+            miru.SelectOption("Cat", "cat", emoji="🐱"),
+            miru.SelectOption("Panda", "panda", emoji="🐼"),
+            miru.SelectOption("Fox", "fox", emoji="🦊"),
+            miru.SelectOption("Red Panda", "red_panda", emoji="🐼"),
+            miru.SelectOption("Koala", "koala", emoji="🐨"),
+            miru.SelectOption("Bird", "bird", emoji="🐦"),
+            miru.SelectOption("Racoon", "racoon", emoji="🦝"),
+            miru.SelectOption("Kangaroo", "kangaroo", emoji="🦘"),
+        ],
+    )
+    async def select_menu(self, select: miru.Select, ctx: miru.Context) -> None:
+        animal = select.values[0]
+        async with ctx.app.d.aio_session.get(
+            f"https://some-random-api.ml/animal/{animal}"
+        ) as res:
+            if res.ok:
+                res = await res.json()
+                embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
+                embed.set_image(res["image"])
+
+                animal = animal.replace("_", " ")
+
+                await ctx.edit_response(
+                    f"Here's a {animal} for you! :3", embed=embed, components=[]
+                )
+            else:
+                await ctx.edit_response(
+                    f"API returned a {res.status} status :c", components=[]
+                )
+
+    async def on_timeout(self) -> None:
+        await self.message.edit("The menu timed out :c", components=[])
+
+    async def view_check(self, ctx: miru.Context) -> bool:
+        return ctx.user.id == self.author.id
+
+
+@fun_group.child
+@lightbulb.command("animal2", "Get a fact + picture of a cute animal :3")
+@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashSubCommand)
+async def animal_subcommand_2(ctx: lightbulb.Context) -> None:
+    view = AnimalView(ctx.author)
+    resp = await ctx.respond(
+        "Pick an animal from the dropdown :3", components=view.build()
+    )
+    msg = await resp.message()
+
+    view.start(msg)
+    await view.wait()
 
 
 def load(bot: lightbulb.BotApp) -> None:
