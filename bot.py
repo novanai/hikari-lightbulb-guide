@@ -3,24 +3,24 @@ import os
 
 import dotenv
 import hikari
+import lightbulb
 
 dotenv.load_dotenv()
 
-bot = hikari.GatewayBot(
+bot = lightbulb.BotApp(
     os.environ["BOT_TOKEN"],
     intents=hikari.Intents.ALL,
+    default_enabled_guilds=(765236394577756171,),
+    prefix="+",
+    banner=None,
 )
 
 
-@bot.listen()
-async def on_message_create(event: hikari.GuildMessageCreateEvent) -> None:
-    if not event.is_human or not event.content:
-        return
-
-    if event.content.strip() == "+ping":
-        await event.message.respond(
-            f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms"
-        )
+@bot.command
+@lightbulb.command("ping", description="The bot's ping")
+@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
+async def ping(ctx: lightbulb.Context) -> None:
+    await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms")
 
 
 if __name__ == "__main__":
