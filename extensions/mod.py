@@ -29,5 +29,20 @@ async def purge_messages(ctx: lightbulb.Context) -> None:
     await ctx.respond(f"{len(msgs)} messages deleted", delete_after=5)
 
 
+@purge_messages.set_error_handler
+async def on_purge_error(event: lightbulb.CommandErrorEvent) -> bool:
+    exception = event.exception.__cause__ or event.exception
+
+    if isinstance(exception, lightbulb.MissingRequiredPermission):
+        await event.context.respond("You do not have permission to use this command.")
+        return True
+
+    elif isinstance(exception, lightbulb.BotMissingRequiredPermission):
+        await event.context.respond("I do not have permission to delete messages.")
+        return True
+
+    return False
+
+
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(mod_plugin)
