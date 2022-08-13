@@ -5,6 +5,7 @@ mod_plugin = lightbulb.Plugin("Mod")
 
 
 @mod_plugin.command
+@lightbulb.add_cooldown(5, 1, lightbulb.UserBucket) # 1 use every 5 seconds per user
 @lightbulb.add_checks(
     lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES),
     lightbulb.bot_has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES),
@@ -39,6 +40,12 @@ async def on_purge_error(event: lightbulb.CommandErrorEvent) -> bool:
 
     elif isinstance(exception, lightbulb.BotMissingRequiredPermission):
         await event.context.respond("I do not have permission to delete messages.")
+        return True
+
+    elif isinstance(exception, lightbulb.CommandIsOnCooldown):
+        await event.context.respond(
+            f"This command is on cooldown! You can use it again in {int(exception.retry_after)} seconds."
+        )
         return True
 
     return False
