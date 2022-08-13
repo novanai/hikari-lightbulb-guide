@@ -12,7 +12,7 @@ dotenv.load_dotenv()
 bot = lightbulb.BotApp(
     os.environ["BOT_TOKEN"],
     intents=hikari.Intents.ALL,
-    default_enabled_guilds=(765236394577756171,),
+    default_enabled_guilds=[765236394577756171],
     prefix="+",
     banner=None,
 )
