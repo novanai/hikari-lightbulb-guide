@@ -38,6 +38,44 @@ async def ping(ctx: lightbulb.Context) -> None:
     await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms")
 
 
+@bot.command
+@lightbulb.option(
+    "ping", "Role to ping with announcement.", type=hikari.OptionType.ROLE
+)
+@lightbulb.option(
+    "channel", "Channel to post announcement to.", type=hikari.OptionType.CHANNEL
+)
+@lightbulb.option(
+    "image", "Announcement attachment.", type=hikari.OptionType.ATTACHMENT
+)
+@lightbulb.option("message", "The message to announce.", type=str)
+@lightbulb.command("announce", "Make an announcement!", pass_options=True)
+@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
+async def announce(
+    ctx: lightbulb.Context,
+    message: str,
+    image: hikari.Attachment,
+    channel: hikari.InteractionChannel,
+    ping: hikari.Role,
+) -> None:
+    embed = hikari.Embed(
+        title="Announcement!",
+        description=message,
+    )
+    embed.set_image(image)
+
+    await ctx.bot.rest.create_message(
+        content=ping.mention,
+        channel=channel.id,
+        embed=embed,
+        role_mentions=True,
+    )
+
+    await ctx.respond(
+        f"Announcement posted to <#{channel.id}>!", flags=hikari.MessageFlag.EPHEMERAL
+    )
+
+
 if __name__ == "__main__":
     if os.name != "nt":
         # we're not running on a Windows machine, so we can use uvloop
