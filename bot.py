@@ -50,7 +50,7 @@ async def ping(ctx: lightbulb.Context) -> None:
 )
 @lightbulb.option("message", "The message to announce.", type=str)
 @lightbulb.command("announce", "Make an announcement!", pass_options=True)
-@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
+@lightbulb.implements(lightbulb.SlashCommand)
 async def announce(
     ctx: lightbulb.Context,
     message: str,
