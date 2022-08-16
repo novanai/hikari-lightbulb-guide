@@ -5,7 +5,7 @@ mod_plugin = lightbulb.Plugin("Mod")
 
 
 @mod_plugin.command
-@lightbulb.add_cooldown(5, 1, lightbulb.UserBucket) # 1 use every 5 seconds per user
+@lightbulb.add_cooldown(5, 1, lightbulb.UserBucket)  # 1 use every 5 seconds per user
 @lightbulb.add_checks(
     lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES),
     lightbulb.bot_has_guild_permissions(hikari.Permissions.MANAGE_MESSAGES),
