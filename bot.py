@@ -39,15 +39,11 @@ async def ping(ctx: lightbulb.Context) -> None:
 
 
 @bot.command
-@lightbulb.option(
-    "ping", "Role to ping with announcement.", type=hikari.Role
-)
+@lightbulb.option("ping", "Role to ping with announcement.", type=hikari.Role)
 @lightbulb.option(
     "channel", "Channel to post announcement to.", type=hikari.TextableChannel
 )
-@lightbulb.option(
-    "image", "Announcement attachment.", type=hikari.Attachment
-)
+@lightbulb.option("image", "Announcement attachment.", type=hikari.Attachment)
 @lightbulb.option("message", "The message to announce.", type=str)
 @lightbulb.command("announce", "Make an announcement!", pass_options=True)
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
