@@ -12,7 +12,6 @@ dotenv.load_dotenv()
 bot = lightbulb.BotApp(
     os.environ["BOT_TOKEN"],
     intents=hikari.Intents.ALL,
-    default_enabled_guilds=[765236394577756171],
     prefix="+",
     banner=None,
 )
@@ -73,12 +72,7 @@ async def announce(
 
 
 if __name__ == "__main__":
-    if os.name != "nt":
-        # we're not running on a Windows machine, so we can use uvloop
-        import uvloop
-
-        uvloop.install()
-    else:
+    if os.name == "nt":
         # we are running on a Windows machine, and we have to add this so
         # the code doesn't error :< (it most likely will error without this)
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
