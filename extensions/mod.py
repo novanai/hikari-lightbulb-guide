@@ -27,7 +27,7 @@ async def purge_messages(ctx: lightbulb.Context) -> None:
     msgs = await ctx.bot.rest.fetch_messages(channel).limit(num_msgs)
     await ctx.bot.rest.delete_messages(channel, msgs)
 
-    await ctx.respond(f"{len(msgs)} messages deleted", delete_after=5)
+    await ctx.respond(f"{len(msgs)} messages deleted.", delete_after=5)
 
 
 @purge_messages.set_error_handler

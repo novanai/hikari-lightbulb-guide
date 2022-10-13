@@ -31,10 +31,10 @@ async def on_stopping(event: hikari.StoppingEvent) -> None:
 
 
 @bot.command
-@lightbulb.command("ping", description="The bot's ping")
+@lightbulb.command("ping", description="The bot's ping.")
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def ping(ctx: lightbulb.Context) -> None:
-    await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms")
+    await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms.")
 
 
 @bot.command
