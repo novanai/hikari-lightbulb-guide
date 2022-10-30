@@ -10,19 +10,19 @@ fun_plugin = lightbulb.Plugin("Fun")
 @fun_plugin.command
 @lightbulb.command("fun", "All the entertainment commands you'll ever need!")
 @lightbulb.implements(lightbulb.PrefixCommandGroup, lightbulb.SlashCommandGroup)
-async def fun_group(ctx: lightbulb.Context) -> None:
-    pass  # as slash commands cannot have their top-level command ran, we simply pass here
+async def fun_group(_: lightbulb.Context) -> None:
+    pass  # as slash commands cannot have their top-level command run, we simply pass here
 
 
 @fun_group.child
 @lightbulb.command("meme", "Get a meme!")
 @lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
 async def meme_subcommand(ctx: lightbulb.Context) -> None:
-    async with ctx.bot.d.aio_session.get(
+    async with ctx.bot.d.client_session.get(
         "https://meme-api.herokuapp.com/gimme"
     ) as response:
         res = await response.json()
-        if response.ok and res["nsfw"] != True:
+        if response.ok and not res["nsfw"]:
             link = res["postLink"]
             title = res["title"]
             img_url = res["url"]
@@ -53,7 +53,7 @@ ANIMALS = {
 
 
 @fun_group.child
-@lightbulb.command("animal", "Get a fact + picture of a cute animal :3")
+@lightbulb.command("animal", "Get a fact & picture of a cute animal :3")
 @lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
 async def animal_subcommand(ctx: lightbulb.Context) -> None:
     select_menu = (
@@ -86,8 +86,10 @@ async def animal_subcommand(ctx: lightbulb.Context) -> None:
     except asyncio.TimeoutError:
         await msg.edit("The menu timed out :c", components=[])
     else:
+        assert isinstance(event.interaction, hikari.ComponentInteraction)
+        
         animal = event.interaction.values[0]
-        async with ctx.bot.d.aio_session.get(
+        async with ctx.bot.d.client_session.get(
             f"https://some-random-api.ml/animal/{animal}"
         ) as res:
             if res.ok:
@@ -125,8 +127,11 @@ class AnimalView(miru.View):
         ],
     )
     async def select_menu(self, select: miru.Select, ctx: miru.Context) -> None:
+        bot = ctx.app
+        assert isinstance(bot, lightbulb.BotApp)
+
         animal = select.values[0]
-        async with ctx.app.d.aio_session.get(
+        async with bot.d.client_session.get(
             f"https://some-random-api.ml/animal/{animal}"
         ) as res:
             if res.ok:
@@ -145,6 +150,7 @@ class AnimalView(miru.View):
                 )
 
     async def on_timeout(self) -> None:
+        assert self.message is not None
         await self.message.edit("The menu timed out :c", components=[])
 
     async def view_check(self, ctx: miru.Context) -> bool:

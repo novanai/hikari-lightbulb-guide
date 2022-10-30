@@ -14,24 +14,21 @@ info_plugin = lightbulb.Plugin("Info")
 @lightbulb.command("userinfo", "Get info on a server member.", pass_options=True)
 @lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
 async def userinfo(ctx: lightbulb.Context, user: Optional[hikari.User] = None) -> None:
-    if not (guild := ctx.get_guild()):
+    if not ctx.guild_id:
         await ctx.respond("This command may only be used in servers.")
         return
 
     user = user or ctx.author
-    user = ctx.bot.cache.get_member(guild, user)
+    user = ctx.bot.cache.get_member(ctx.guild_id, user)
 
     if not user:
-        await ctx.respond("That user is not in the server.")
+        await ctx.respond("That user is not in this server.")
         return
 
     created_at = int(user.created_at.timestamp())
     joined_at = int(user.joined_at.timestamp())
 
-    roles = (await user.fetch_roles())[1:]  # All but @everyone
-    roles = sorted(
-        roles, key=lambda role: role.position, reverse=True
-    )  # sort them by position, then reverse the order to go from top role down
+    roles = [f"<@&{role}>" for role in user.role_ids if role != ctx.guild_id]
 
     embed = (
         hikari.Embed(
@@ -41,7 +38,7 @@ async def userinfo(ctx: lightbulb.Context, user: Optional[hikari.User] = None) -
             timestamp=datetime.now().astimezone(),
         )
         .set_footer(
-            text=f"Requested by {ctx.author.username}",
+            text=f"Requested by {ctx.author}",
             icon=ctx.author.display_avatar_url,
         )
         .set_thumbnail(user.avatar_url)
@@ -62,7 +59,7 @@ async def userinfo(ctx: lightbulb.Context, user: Optional[hikari.User] = None) -
         )
         .add_field(
             "Roles",
-            ", ".join(r.mention for r in roles),
+            ", ".join(roles) if roles else "No roles",
             inline=False,
         )
     )
