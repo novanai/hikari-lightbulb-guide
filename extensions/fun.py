@@ -87,7 +87,7 @@ async def animal_subcommand(ctx: lightbulb.Context) -> None:
         await msg.edit("The menu timed out :c", components=[])
     else:
         assert isinstance(event.interaction, hikari.ComponentInteraction)
-        
+
         animal = event.interaction.values[0]
         async with ctx.bot.d.client_session.get(
             f"https://some-random-api.ml/animal/{animal}"
