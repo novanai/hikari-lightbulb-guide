@@ -10,22 +10,15 @@ from hikari import Intents
 
 dotenv.load_dotenv()
 
-INTENTS = (
-    Intents.ALL_MESSAGES
-    | Intents.MESSAGE_CONTENT
-    | Intents.GUILD_MEMBERS
-    | Intents.GUILDS
-)
+INTENTS = Intents.GUILD_MEMBERS | Intents.GUILDS
 
 bot = lightbulb.BotApp(
     os.environ["BOT_TOKEN"],
     intents=INTENTS,
-    prefix="+",
     banner=None,
-    help_class=None,
 )
 
-miru.load(bot)  # type: ignore[arg-type]
+miru.install(bot)  # type: ignore[arg-type]
 bot.load_extensions_from("./extensions/")
 
 
@@ -41,8 +34,8 @@ async def on_stopping(_: hikari.StoppingEvent) -> None:
 
 @bot.command
 @lightbulb.command("ping", description="The bot's ping.")
-@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
-async def ping_cmd(ctx: lightbulb.Context) -> None:
+@lightbulb.implements(lightbulb.SlashCommand)
+async def ping_cmd(ctx: lightbulb.SlashContext) -> None:
     await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms.")
 
 
@@ -60,7 +53,7 @@ async def ping_cmd(ctx: lightbulb.Context) -> None:
 @lightbulb.command("announce", "Make an announcement!", pass_options=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def announce(
-    ctx: lightbulb.Context,
+    ctx: lightbulb.SlashContext,
     message: str,
     channel: hikari.GuildTextChannel,
     image: Optional[hikari.Attachment] = None,
@@ -73,8 +66,8 @@ async def announce(
     embed.set_image(image)
 
     await ctx.app.rest.create_message(
-        content=ping.mention if ping else hikari.UNDEFINED,
         channel=channel.id,
+        content=ping.mention if ping else hikari.UNDEFINED,
         embed=embed,
         role_mentions=True,
     )

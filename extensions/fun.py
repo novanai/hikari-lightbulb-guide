@@ -9,34 +9,39 @@ fun_plugin = lightbulb.Plugin("Fun")
 
 @fun_plugin.command
 @lightbulb.command("fun", "All the entertainment commands you'll ever need!")
-@lightbulb.implements(lightbulb.PrefixCommandGroup, lightbulb.SlashCommandGroup)
-async def fun_group(_: lightbulb.Context) -> None:
+@lightbulb.implements(lightbulb.SlashCommandGroup)
+async def fun_group(_) -> None:
     pass  # as slash commands cannot have their top-level command run, we simply pass here
 
 
 @fun_group.child
 @lightbulb.command("meme", "Get a meme!")
-@lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
-async def meme_subcommand(ctx: lightbulb.Context) -> None:
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def meme_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.get(
         "https://meme-api.herokuapp.com/gimme"
-    ) as response:
-        res = await response.json()
-        if response.ok and not res["nsfw"]:
-            link = res["postLink"]
-            title = res["title"]
-            img_url = res["url"]
-
-            embed = hikari.Embed(colour=0x3B9DFF)
-            embed.set_author(name=title, url=link)
-            embed.set_image(img_url)
-
-            await ctx.respond(embed)
-
-        else:
+    ) as res:
+        if not res.ok:
             await ctx.respond(
-                "Could not fetch a meme :c", flags=hikari.MessageFlag.EPHEMERAL
+                f"API returned a {res.status} status :c",
+                flags=hikari.MessageFlag.EPHEMERAL,
             )
+            return
+
+        data = await res.json()
+
+        if data["nsfw"]:
+            await ctx.respond(
+                "Response was NSFW, couldn't send :c",
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+            return
+
+        embed = hikari.Embed(colour=0x3B9DFF)
+        embed.set_author(name=data["title"], url=data["postLink"])
+        embed.set_image(data["url"])
+
+        await ctx.respond(embed)
 
 
 ANIMALS = {
@@ -54,10 +59,10 @@ ANIMALS = {
 
 @fun_group.child
 @lightbulb.command("animal", "Get a fact & picture of a cute animal :3")
-@lightbulb.implements(lightbulb.PrefixSubCommand, lightbulb.SlashSubCommand)
-async def animal_subcommand(ctx: lightbulb.Context) -> None:
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def animal_subcommand(ctx: lightbulb.SlashContext) -> None:
     select_menu = (
-        ctx.bot.rest.build_action_row()
+        ctx.bot.rest.build_message_action_row()
         .add_select_menu("animal_select")
         .set_placeholder("Pick an animal")
     )
@@ -86,24 +91,21 @@ async def animal_subcommand(ctx: lightbulb.Context) -> None:
     except asyncio.TimeoutError:
         await msg.edit("The menu timed out :c", components=[])
     else:
-        assert isinstance(event.interaction, hikari.ComponentInteraction)
-
-        animal = event.interaction.values[0]
+        animal = event.interaction.values[0]  # type: ignore[attr-defined]
         async with ctx.bot.d.client_session.get(
             f"https://some-random-api.ml/animal/{animal}"
         ) as res:
-            if res.ok:
-                res = await res.json()
-                embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
-                embed.set_image(res["image"])
-
-                animal = animal.replace("_", " ")
-
-                await msg.edit(
-                    f"Here's a {animal} for you! :3", embed=embed, components=[]
-                )
-            else:
+            if not res.ok:
                 await msg.edit(f"API returned a {res.status} status :c", components=[])
+                return
+
+            res = await res.json()
+            embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
+            embed.set_image(res["image"])
+
+            animal = animal.replace("_", " ")
+
+            await msg.edit(f"Here's a {animal} for you! :3", embed=embed, components=[])
 
 
 class AnimalView(miru.View):
@@ -115,43 +117,33 @@ class AnimalView(miru.View):
         custom_id="animal_select",
         placeholder="Pick an animal",
         options=[
-            miru.SelectOption("Dog", "dog", emoji="🐶"),
-            miru.SelectOption("Cat", "cat", emoji="🐱"),
-            miru.SelectOption("Panda", "panda", emoji="🐼"),
-            miru.SelectOption("Fox", "fox", emoji="🦊"),
-            miru.SelectOption("Red Panda", "red_panda", emoji="🐼"),
-            miru.SelectOption("Koala", "koala", emoji="🐨"),
-            miru.SelectOption("Bird", "bird", emoji="🐦"),
-            miru.SelectOption("Racoon", "racoon", emoji="🦝"),
-            miru.SelectOption("Kangaroo", "kangaroo", emoji="🦘"),
+            miru.SelectOption(name, name.lower().replace(" ", "_"), emoji=emoji)
+            for name, emoji in ANIMALS.items()
         ],
     )
     async def select_menu(self, select: miru.Select, ctx: miru.Context) -> None:
-        bot = ctx.app
-        assert isinstance(bot, lightbulb.BotApp)
-
         animal = select.values[0]
-        async with bot.d.client_session.get(
+        async with ctx.app.d.client_session.get(  # type: ignore[attr-defined]
             f"https://some-random-api.ml/animal/{animal}"
         ) as res:
-            if res.ok:
-                res = await res.json()
-                embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
-                embed.set_image(res["image"])
-
-                animal = animal.replace("_", " ")
-
-                await ctx.edit_response(
-                    f"Here's a {animal} for you! :3", embed=embed, components=[]
-                )
-            else:
+            if not res.ok:
                 await ctx.edit_response(
                     f"API returned a {res.status} status :c", components=[]
                 )
+                return
+
+            res = await res.json()
+            embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
+            embed.set_image(res["image"])
+
+            animal = animal.replace("_", " ")
+
+            await ctx.edit_response(
+                f"Here's a {animal} for you! :3", embed=embed, components=[]
+            )
 
     async def on_timeout(self) -> None:
-        assert self.message is not None
-        await self.message.edit("The menu timed out :c", components=[])
+        await self.message.edit("The menu timed out :c", components=[])  # type: ignore[union-attr]
 
     async def view_check(self, ctx: miru.Context) -> bool:
         return ctx.user.id == self.author.id
@@ -159,15 +151,14 @@ class AnimalView(miru.View):
 
 @fun_group.child
 @lightbulb.command("animal2", "Get a fact + picture of a cute animal :3")
-@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashSubCommand)
-async def animal_subcommand_2(ctx: lightbulb.Context) -> None:
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def animal_subcommand_2(ctx: lightbulb.SlashContext) -> None:
     view = AnimalView(ctx.author)
     resp = await ctx.respond(
         "Pick an animal from the dropdown :3", components=view.build()
     )
-    msg = await resp.message()
 
-    view.start(msg)
+    await view.start(resp)
     await view.wait()
 
 

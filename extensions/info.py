@@ -12,8 +12,10 @@ info_plugin = lightbulb.Plugin("Info")
     "user", "The user to get information about.", hikari.User, required=False
 )
 @lightbulb.command("userinfo", "Get info on a server member.", pass_options=True)
-@lightbulb.implements(lightbulb.PrefixCommand, lightbulb.SlashCommand)
-async def userinfo(ctx: lightbulb.Context, user: Optional[hikari.User] = None) -> None:
+@lightbulb.implements(lightbulb.SlashCommand)
+async def userinfo(
+    ctx: lightbulb.SlashContext, user: Optional[hikari.User] = None
+) -> None:
     if not ctx.guild_id:
         await ctx.respond("This command may only be used in servers.")
         return
