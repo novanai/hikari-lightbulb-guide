@@ -8,6 +8,7 @@ info_plugin = lightbulb.Plugin("Info")
 
 
 @info_plugin.command
+@lightbulb.app_command_permissions(dm_enabled=False)
 @lightbulb.option(
     "user", "The user to get information about.", hikari.User, required=False
 )
@@ -16,9 +17,7 @@ info_plugin = lightbulb.Plugin("Info")
 async def userinfo(
     ctx: lightbulb.SlashContext, user: Optional[hikari.User] = None
 ) -> None:
-    if not ctx.guild_id:
-        await ctx.respond("This command may only be used in servers.")
-        return
+    assert ctx.guild_id is not None
 
     user = user or ctx.author
     user = ctx.bot.cache.get_member(ctx.guild_id, user)
