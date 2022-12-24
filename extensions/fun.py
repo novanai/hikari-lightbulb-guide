@@ -19,7 +19,7 @@ async def fun_group(_) -> None:
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def meme_subcommand(ctx: lightbulb.SlashContext) -> None:
     async with ctx.bot.d.client_session.get(
-        "https://meme-api.herokuapp.com/gimme"
+        "https://meme-api.com/gimme"
     ) as res:
         if not res.ok:
             await ctx.respond(
