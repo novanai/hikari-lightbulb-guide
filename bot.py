@@ -36,7 +36,7 @@ async def on_stopping(_: hikari.StoppingEvent) -> None:
 @lightbulb.command("ping", description="The bot's ping.")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def ping_cmd(ctx: lightbulb.SlashContext) -> None:
-    await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency*1000:.2f}ms.")
+    await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency * 1000:.2f}ms.")
 
 
 @bot.command
