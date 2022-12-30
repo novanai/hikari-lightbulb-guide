@@ -99,9 +99,9 @@ async def animal_subcommand(ctx: lightbulb.SlashContext) -> None:
                 await msg.edit(f"API returned a {res.status} status :c", components=[])
                 return
 
-            res = await res.json()
-            embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
-            embed.set_image(res["image"])
+            data = await res.json()
+            embed = hikari.Embed(description=data["fact"], colour=0x3B9DFF)
+            embed.set_image(data["image"])
 
             animal = animal.replace("_", " ")
 
@@ -132,9 +132,9 @@ class AnimalView(miru.View):
                 )
                 return
 
-            res = await res.json()
-            embed = hikari.Embed(description=res["fact"], colour=0x3B9DFF)
-            embed.set_image(res["image"])
+            data = await res.json()
+            embed = hikari.Embed(description=data["fact"], colour=0x3B9DFF)
+            embed.set_image(data["image"])
 
             animal = animal.replace("_", " ")
 
