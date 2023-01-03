@@ -53,7 +53,7 @@ async def purge_messages(ctx: lightbulb.SlashContext) -> None:
     await ctx.respond(f"{count} messages deleted.", delete_after=5)
 
 
-@purge_messages.set_error_handler()
+@purge_messages.set_error_handler
 async def on_purge_error(event: lightbulb.CommandErrorEvent) -> bool:
     exception = event.exception.__cause__ or event.exception
 
