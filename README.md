@@ -1,0 +1,1 @@
+https://novanai.readthedocs.io/en/latest/lightbulb/
