@@ -26,7 +26,7 @@ mod_plugin = lightbulb.Plugin("Mod")
     min_value=2,
     max_value=200,
 )
-@lightbulb.command("purge", "Purge messages.")
+@lightbulb.command("purge", "Purge messages.", auto_defer=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def purge_messages(ctx: lightbulb.SlashContext) -> None:
     num_msgs = ctx.options.messages
@@ -36,13 +36,16 @@ async def purge_messages(ctx: lightbulb.SlashContext) -> None:
     bulk_delete_limit = datetime.datetime.now(
         datetime.timezone.utc
     ) - datetime.timedelta(days=14)
+
     iterator = (
         ctx.bot.rest.fetch_messages(channel)
         .take_while(lambda msg: msg.created_at > bulk_delete_limit)
-        .limit(num_msgs)
+        .filter(lambda msg: not (msg.flags & hikari.MessageFlag.LOADING))
     )
     if sent_by:
         iterator = iterator.filter(lambda msg: msg.author.id == sent_by.id)
+
+    iterator = iterator.limit(num_msgs)
 
     count = 0
 
