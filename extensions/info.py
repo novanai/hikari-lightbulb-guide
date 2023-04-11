@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional
+import datetime
 
 import hikari
 import lightbulb
@@ -14,9 +13,7 @@ info_plugin = lightbulb.Plugin("Info")
 )
 @lightbulb.command("userinfo", "Get info on a server member.", pass_options=True)
 @lightbulb.implements(lightbulb.SlashCommand)
-async def userinfo(
-    ctx: lightbulb.SlashContext, user: Optional[hikari.User] = None
-) -> None:
+async def userinfo(ctx: lightbulb.SlashContext, user: hikari.User | None) -> None:
     assert ctx.guild_id is not None
 
     user = user or ctx.author
@@ -33,16 +30,16 @@ async def userinfo(
 
     embed = (
         hikari.Embed(
-            title=f"User Info - {user.display_name}",
+            title=f"User Info - {user}",
             description=f"ID: `{user.id}`",
             colour=0x3B9DFF,
-            timestamp=datetime.now().astimezone(),
+            timestamp=datetime.datetime.now(datetime.timezone.utc),
         )
         .set_footer(
             text=f"Requested by {ctx.author}",
             icon=ctx.author.display_avatar_url,
         )
-        .set_thumbnail(user.avatar_url)
+        .set_thumbnail(user.display_avatar_url)
         .add_field(
             "Bot?",
             "Yes" if user.is_bot else "No",

@@ -10,7 +10,7 @@ fun_plugin = lightbulb.Plugin("Fun")
 @fun_plugin.command
 @lightbulb.command("fun", "All the entertainment commands you'll ever need!")
 @lightbulb.implements(lightbulb.SlashCommandGroup)
-async def fun_group(_: lightbulb.SlashContext) -> None:
+async def fun_group(ctx: lightbulb.SlashContext) -> None:
     pass  # as slash commands cannot have their top-level command run, we simply pass here
 
 
@@ -28,7 +28,7 @@ async def meme_subcommand(ctx: lightbulb.SlashContext) -> None:
 
         data = await res.json()
 
-        if data["nsfw"]:
+        if data["nsfw"] is True:
             await ctx.respond(
                 "Response was NSFW, couldn't send :c",
                 flags=hikari.MessageFlag.EPHEMERAL,
@@ -51,7 +51,7 @@ ANIMALS = {
     "Koala": "🐨",
     "Panda": "🐼",
     "Raccoon": "🦝",
-    "Red Panda": "🐼", 
+    "Red Panda": "🐼",
 }
 
 
@@ -59,21 +59,20 @@ ANIMALS = {
 @lightbulb.command("animal", "Get a fact & picture of a cute animal :3")
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def animal_subcommand(ctx: lightbulb.SlashContext) -> None:
-    select_menu = (
-        ctx.bot.rest.build_message_action_row()
-        .add_select_menu(hikari.ComponentType.TEXT_SELECT_MENU, "animal_select")
-        .set_placeholder("Pick an animal")
+    select_menu = ctx.bot.rest.build_message_action_row().add_text_menu(
+        "animal_select", placeholder="Pick an animal"
     )
 
     for name, emoji in ANIMALS.items():
         select_menu.add_option(
             name,  # the label, which users see
             name.lower().replace(" ", "_"),  # the value, which is used by us later
-        ).set_emoji(emoji).add_to_menu()
+            emoji=emoji,
+        )
 
     resp = await ctx.respond(
         "Pick an animal from the dropdown :3",
-        component=select_menu.add_to_container(),
+        component=select_menu.parent,
     )
     msg = await resp.message()
 
@@ -89,7 +88,8 @@ async def animal_subcommand(ctx: lightbulb.SlashContext) -> None:
     except asyncio.TimeoutError:
         await msg.edit("The menu timed out :c", components=[])
     else:
-        animal = event.interaction.values[0]  # type: ignore[attr-defined]
+        assert isinstance(event.interaction, hikari.ComponentInteraction)
+        animal = event.interaction.values[0]
         async with ctx.bot.d.client_session.get(
             f"https://some-random-api.ml/animal/{animal}"
         ) as res:
@@ -121,7 +121,9 @@ class AnimalView(miru.View):
     )
     async def select_menu(self, select: miru.TextSelect, ctx: miru.ViewContext) -> None:
         animal = select.values[0]
-        async with ctx.app.d.client_session.get(  # type: ignore[attr-defined]
+
+        assert isinstance(ctx.app, lightbulb.BotApp)
+        async with ctx.app.d.client_session.get(
             f"https://some-random-api.ml/animal/{animal}"
         ) as res:
             if not res.ok:
@@ -141,7 +143,8 @@ class AnimalView(miru.View):
             )
 
     async def on_timeout(self) -> None:
-        await self.message.edit("The menu timed out :c", components=[])  # type: ignore[union-attr]
+        assert self.message
+        await self.message.edit("The menu timed out :c", components=[])
 
     async def view_check(self, ctx: miru.ViewContext) -> bool:
         return ctx.user.id == self.author.id

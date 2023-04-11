@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import aiohttp
 import dotenv
@@ -23,19 +22,19 @@ bot.load_extensions_from("./extensions/")
 
 
 @bot.listen()
-async def on_starting(_: hikari.StartingEvent) -> None:
+async def on_starting(event: hikari.StartingEvent) -> None:
     bot.d.client_session = aiohttp.ClientSession()
 
 
 @bot.listen()
-async def on_stopping(_: hikari.StoppingEvent) -> None:
+async def on_stopping(event: hikari.StoppingEvent) -> None:
     await bot.d.client_session.close()
 
 
 @bot.command
-@lightbulb.command("ping", description="The bot's ping.")
+@lightbulb.command("ping", "The bot's ping.")
 @lightbulb.implements(lightbulb.SlashCommand)
-async def ping_cmd(ctx: lightbulb.SlashContext) -> None:
+async def ping(ctx: lightbulb.SlashContext) -> None:
     await ctx.respond(f"Pong! Latency: {bot.heartbeat_latency * 1000:.2f}ms.")
 
 
@@ -56,8 +55,8 @@ async def announce(
     ctx: lightbulb.SlashContext,
     message: str,
     channel: hikari.GuildTextChannel,
-    image: Optional[hikari.Attachment] = None,
-    ping: Optional[hikari.Role] = None,
+    image: hikari.Attachment | None,
+    ping: hikari.Role | None,
 ) -> None:
     embed = hikari.Embed(
         title="Announcement!",
