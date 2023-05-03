@@ -9,29 +9,28 @@ info_plugin = lightbulb.Plugin("Info")
 @info_plugin.command
 @lightbulb.app_command_permissions(dm_enabled=False)
 @lightbulb.option(
-    "user", "The user to get information about.", hikari.User, required=False
+    "member", "The member to get information about.", hikari.Member, required=False
 )
-@lightbulb.command("userinfo", "Get info on a server member.", pass_options=True)
+@lightbulb.command("memberinfo", "Get info on a server member.", pass_options=True)
 @lightbulb.implements(lightbulb.SlashCommand)
-async def userinfo(ctx: lightbulb.SlashContext, user: hikari.User | None) -> None:
-    assert ctx.guild_id is not None
+async def memberinfo(ctx: lightbulb.SlashContext, member: hikari.InteractionMember | hikari.User | None) -> None:
+    assert ctx.guild_id is not None and ctx.member is not None
 
-    user = user or ctx.author
-    user = ctx.bot.cache.get_member(ctx.guild_id, user)
-
-    if not user:
-        await ctx.respond("That user is not in this server.")
+    member = member or ctx.member
+    
+    if not isinstance(member, hikari.Member):
+        await ctx.respond("That member is not in this server.")
         return
 
-    created_at = int(user.created_at.timestamp())
-    joined_at = int(user.joined_at.timestamp())
+    created_at = int(member.created_at.timestamp())
+    joined_at = int(member.joined_at.timestamp())
 
-    roles = [f"<@&{role}>" for role in user.role_ids if role != ctx.guild_id]
+    roles = [f"<@&{role}>" for role in member.role_ids if role != ctx.guild_id]
 
     embed = (
         hikari.Embed(
-            title=f"User Info - {user}",
-            description=f"ID: `{user.id}`",
+            title=f"Member Info - {member}",
+            description=f"ID: `{member.id}`",
             colour=0x3B9DFF,
             timestamp=datetime.datetime.now(datetime.timezone.utc),
         )
@@ -39,10 +38,10 @@ async def userinfo(ctx: lightbulb.SlashContext, user: hikari.User | None) -> Non
             text=f"Requested by {ctx.author}",
             icon=ctx.author.display_avatar_url,
         )
-        .set_thumbnail(user.display_avatar_url)
+        .set_thumbnail(member.display_avatar_url)
         .add_field(
             "Bot?",
-            "Yes" if user.is_bot else "No",
+            "Yes" if member.is_bot else "No",
             inline=True,
         )
         .add_field(
