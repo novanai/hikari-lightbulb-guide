@@ -91,7 +91,7 @@ async def animal_subcommand(ctx: lightbulb.SlashContext) -> None:
         assert isinstance(event.interaction, hikari.ComponentInteraction)
         animal = event.interaction.values[0]
         async with ctx.bot.d.client_session.get(
-            f"https://some-random-api.ml/animal/{animal}"
+            f"https://some-random-api.com/animal/{animal}"
         ) as res:
             if not res.ok:
                 await msg.edit(f"API returned a {res.status} status :c", components=[])
@@ -124,7 +124,7 @@ class AnimalView(miru.View):
 
         assert isinstance(ctx.app, lightbulb.BotApp)
         async with ctx.app.d.client_session.get(
-            f"https://some-random-api.ml/animal/{animal}"
+            f"https://some-random-api.com/animal/{animal}"
         ) as res:
             if not res.ok:
                 await ctx.edit_response(
