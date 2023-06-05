@@ -46,7 +46,7 @@ async def ping(ctx: lightbulb.SlashContext) -> None:
     "image", "Announcement attachment.", type=hikari.Attachment, required=False
 )
 @lightbulb.option(
-    "channel", "Channel to post announcement to.", type=hikari.TextableChannel
+    "channel", "Channel to post announcement to.", type=hikari.GuildChannel, channel_types=[hikari.ChannelType.GUILD_TEXT]
 )
 @lightbulb.option("message", "The message to announce.", type=str)
 @lightbulb.command("announce", "Make an announcement!", pass_options=True)

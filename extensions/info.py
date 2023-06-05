@@ -13,13 +13,15 @@ info_plugin = lightbulb.Plugin("Info")
 )
 @lightbulb.command("memberinfo", "Get info on a server member.", pass_options=True)
 @lightbulb.implements(lightbulb.SlashCommand)
-async def memberinfo(ctx: lightbulb.SlashContext, member: hikari.InteractionMember | hikari.User | None) -> None:
+async def memberinfo(
+    ctx: lightbulb.SlashContext, member: hikari.InteractionMember | hikari.User | None
+) -> None:
     assert ctx.guild_id is not None and ctx.member is not None
 
     member = member or ctx.member
-    
-    if not isinstance(member, hikari.Member):
-        await ctx.respond("That member is not in this server.")
+
+    if not isinstance(member, hikari.InteractionMember):
+        await ctx.respond("That user is not in this server.")
         return
 
     created_at = int(member.created_at.timestamp())
