@@ -146,7 +146,10 @@ class AnimalView(miru.View):
         assert self.message
         await self.message.edit("The menu timed out :c", components=[])
 
-    async def view_check(self, ctx: miru.ViewContext) -> bool:
+    async def view_check(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self,
+        ctx: miru.ViewContext,
+    ) -> bool:
         return ctx.user.id == self.author.id
 
 
